@@ -14,5 +14,6 @@ log
 
 train.sh
 .exp/
+.exp_cuda/
 .idea/
 .pth
