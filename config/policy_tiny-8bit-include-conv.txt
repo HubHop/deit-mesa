@@ -1,0 +1,56 @@
+on conv:
+  by_index: all
+  enable: True
+  level: 256
+  stable: -1
+  ema_decay: 0.9
+  fp_forward: False
+
+on fc:
+  by_index: all
+  enable: True
+  level: 256
+  stable: -1
+  ema_decay: 0.9
+  fp_forward: False
+
+
+on matmul:
+  by_index: all
+  enable: True
+  level: 256
+  stable: -1
+  ema_decay: 0.9
+  fp_forward: False
+
+  by_index: 1 3 5 7 9 11 13 15 17 19 21 23
+  by_tag: matmul-1
+  non_negative_only: True
+
+on gelu:
+  by_index: all
+  enable: True
+  level: 256
+  stable: -1
+  ema_decay: 0.9
+  fp_forward: False
+
+on layernorm:
+  by_index: all
+  enable: True
+  level: 256
+  stable: -1
+  ema_decay: 0.9
+  fp_forward: False
+
+on softmax:
+  by_index: all
+  enable: True
+  level: 256
+  stable: -1
+  ema_decay: 0.9
+  fp_forward: False
+
+  by_index: all
+  by_tag: softmax-2
+  non_negative_only: True
