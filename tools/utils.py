@@ -345,9 +345,9 @@ def load_pretrained(model, args, logger=None):
             checkpoint = torch.load(args.pretrained)
         else:
             checkpoint = torch.load(args.pretrained, map_location='cpu')
-        logger.info("load pretrained ==> last epoch: %d" % checkpoint.get('epoch', 0))
-        logger.info("load pretrained ==> last best_acc: %f" % checkpoint.get('best_acc', 0))
-        logger.info("load pretrained ==> last learning_rate: %f" % checkpoint.get('learning_rate', 0))
+        # logger.info("load pretrained ==> last epoch: %d" % checkpoint.get('epoch', 0))
+        # logger.info("load pretrained ==> last best_acc: %f" % checkpoint.get('best_acc', 0))
+        # logger.info("load pretrained ==> last learning_rate: %f" % checkpoint.get('learning_rate', 0))
         #if 'learning_rate' in checkpoint:
         #    lr = checkpoint['learning_rate']
         #    logger.info("resuming ==> learning_rate: %f" % lr)

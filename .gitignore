@@ -13,8 +13,9 @@ log
 .python-version
 
 train.sh
-.exp/
-.exp_cuda/
+exp/
+outputs/
+exp_cuda/
 .idea/
 *.pth
 *.out

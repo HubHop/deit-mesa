@@ -152,7 +152,7 @@ def get_args_parser():
                         choices=['kingdom', 'phylum', 'class', 'order', 'supercategory', 'family', 'genus', 'name'],
                         type=str, help='semantic granularity')
 
-    parser.add_argument('--output_dir', default='exp',
+    parser.add_argument('--output_dir', default='./output',
                         help='path where to save, empty for no saving')
     parser.add_argument('--device', default='cuda',
                         help='device to use for training / testing')
@@ -176,6 +176,10 @@ def get_args_parser():
 
     # memory_saving
     parser.add_argument('--ms_policy', default='', type=str, help='memory_saving quantization policy file')
+
+    parser.add_argument('--exp_name', default='deit',
+                        type=str, help='model configuration')
+
     return parser
 
 
@@ -183,7 +187,7 @@ def main(args):
     utils.init_distributed_mode(args)
 
     #case = "{}-{}-{}".format(args.model, args.data_set, args.batch_size)
-    args.output_dir = os.path.join(args.output_dir, datetime.today().strftime('%Y-%m-%d'))
+    # args.output_dir = os.path.join(args.output_dir, datetime.today().strftime('%Y-%m-%d'))
     verbose = print
     if utils.get_rank() == 0:
         log_suffix = "{}log-all".format("eval-" if args.eval else "")
@@ -366,12 +370,17 @@ def main(args):
     )
 
     output_dir = Path(args.output_dir)
+    max_accuracy = 0.0
     if args.resume:
-        if args.resume.startswith('https'):
-            checkpoint = torch.hub.load_state_dict_from_url(
-                args.resume, map_location='cpu', check_hash=True)
-        else:
-            checkpoint = torch.load(args.resume, map_location='cpu')
+        checkpoint = torch.load(args.resume, map_location='cpu')
+        best_checkpoint = torch.load(os.path.join(args.output_dir, 'best_checkpoint.pth'), map_location='cpu')
+        checkpoint['best_acc'] = best_checkpoint['best_acc']
+        max_accuracy = checkpoint['best_acc']
+        # if args.resume.startswith('https'):
+        #     checkpoint = torch.hub.load_state_dict_from_url(
+        #         args.resume, map_location='cpu', check_hash=True)
+        # else:
+        #     checkpoint = torch.load(args.resume, map_location='cpu')
         #model_without_ddp.load_state_dict(checkpoint['model'])
         setattr(args, 'pretrained', args.resume)
         tools.load_pretrained(model_without_ddp, args)
@@ -379,10 +388,12 @@ def main(args):
             optimizer.load_state_dict(checkpoint['optimizer'])
             lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
             args.start_epoch = checkpoint['epoch'] + 1
-            # if args.model_ema:
-            #     utils._load_checkpoint_for_ema(model_ema, checkpoint['model_ema'])
             if 'scaler' in checkpoint:
                 loss_scaler.load_state_dict(checkpoint['scaler'])
+
+            verbose("load pretrained ==> last epoch: %d" % checkpoint.get('epoch', 0))
+            verbose("load pretrained ==> last best_acc: %f" % checkpoint.get('best_acc', 0))
+
 
     if args.eval:
         test_stats = evaluate(data_loader_val, model, device, verbose=verbose)
@@ -391,7 +402,7 @@ def main(args):
 
     verbose(f"Start training for {args.epochs} epochs")
     start_time = time.time()
-    max_accuracy = 0.0
+
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             data_loader_train.sampler.set_epoch(epoch)
@@ -406,16 +417,16 @@ def main(args):
 
         lr_scheduler.step(epoch)
         if args.output_dir:
-            checkpoint_paths = [output_dir / 'checkpoint.pth']
+            checkpoint_paths = [output_dir / 'last_checkpoint.pth']
             for checkpoint_path in checkpoint_paths:
                 utils.save_on_master({
                     'model': model_without_ddp.state_dict(),
                     'optimizer': optimizer.state_dict(),
                     'lr_scheduler': lr_scheduler.state_dict(),
                     'epoch': epoch,
-                    # 'model_ema': get_state_dict(model_ema),
                     'scaler': loss_scaler.state_dict(),
                     'args': args,
+                    'best_acc': max_accuracy
                 }, checkpoint_path)
 
         test_stats = evaluate(data_loader_val, model, device, verbose=verbose)
@@ -428,6 +439,7 @@ def main(args):
                 'epoch': epoch,
                 'scaler': loss_scaler.state_dict(),
                 'args': args,
+                'best_acc': test_stats["acc1"]
             }, os.path.join(args.output_dir, 'best_checkpoint.pth'))
 
         max_accuracy = max(max_accuracy, test_stats["acc1"])
@@ -450,6 +462,13 @@ def main(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('DeiT training and evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
-    if args.output_dir:
-        Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+
+    output_dir = os.path.join('outputs', args.exp_name)
+    setattr(args, 'output_dir', output_dir)
+    Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+
+    last_checkpoint = os.path.join(args.output_dir, 'last_checkpoint.pth')
+    if os.path.exists(last_checkpoint) and not args.resume:
+        setattr(args, 'resume', last_checkpoint)
+
     main(args)
