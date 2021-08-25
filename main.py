@@ -373,8 +373,10 @@ def main(args):
     max_accuracy = 0.0
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')
-        best_checkpoint = torch.load(os.path.join(args.output_dir, 'best_checkpoint.pth'), map_location='cpu')
-        checkpoint['best_acc'] = best_checkpoint['best_acc']
+        best_path = os.path.join(args.output_dir, 'best_checkpoint.pth')
+        if os.path.exists(best_path):
+            best_checkpoint = torch.load(best_path, map_location='cpu')
+            checkpoint['best_acc'] = best_checkpoint['best_acc']
         max_accuracy = checkpoint['best_acc']
         # if args.resume.startswith('https'):
         #     checkpoint = torch.hub.load_state_dict_from_url(
