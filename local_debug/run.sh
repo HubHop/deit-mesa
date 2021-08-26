@@ -6,6 +6,6 @@ CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch \
             --data-path /home/datasets/cifar100  \
             --data-set CIFAR \
             --input-size 224  \
-            --output_dir ./exp/debug \
+            --exp_name previous-best \
             --num_workers 10 \
             --ms_policy config/policy_tiny-8bit.txt 
