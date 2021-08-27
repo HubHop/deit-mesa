@@ -45,9 +45,6 @@ def plot_log(key):
     plt.savefig(base_dir + '/%s.pdf'%(ylabel))
 
 if __name__ == '__main__':
-    # plot_log_formal2()
-    # plot_flops_acc()
-    # os.chdir('/data1/conferences/iccv2021/efficient-deit/')
     keys = ['test_acc1', 'test_acc5', 'train_loss', 'test_loss']
     for key in keys:
         plot_log(key)

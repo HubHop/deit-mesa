@@ -18,7 +18,7 @@ from timm.optim import create_optimizer
 from timm.utils import NativeScaler, get_state_dict, ModelEma
 
 from datasets import build_dataset
-from engine import train_one_epoch, evaluate
+from engine import train_one_epoch, evaluate, get_act_dist
 from losses import DistillationLoss
 from samplers import RASampler
 import models
@@ -180,7 +180,7 @@ def get_args_parser():
 
     parser.add_argument('--exp_name', default='deit',
                         type=str, help='model configuration')
-
+    parser.add_argument('--get_act_dist', action='store_true', help='plot activation distribution')
     return parser
 
 
@@ -270,7 +270,8 @@ def main(args):
         drop_path_rate=args.drop_path,
         drop_block_rate=None,
     )
-
+    # for name, module in model.named_modules():
+    #     module.name = name
     ms.policy.deploy_on_init(model, args.ms_policy, verbose=verbose, override_verbose=True)
     verbose(f"verbose model: {model}")
 
@@ -397,6 +398,9 @@ def main(args):
             verbose("load pretrained ==> last epoch: %d" % checkpoint.get('epoch', 0))
             verbose("load pretrained ==> last best_acc: %f" % checkpoint.get('best_acc', 0))
 
+    if args.get_act_dist:
+        get_act_dist(data_loader_val, model, device, verbose=verbose)
+        return
 
     if args.eval:
         test_stats = evaluate(data_loader_val, model, device, verbose=verbose)
