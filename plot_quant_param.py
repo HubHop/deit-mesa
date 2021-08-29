@@ -6,11 +6,11 @@ import numpy as np
 from collections import defaultdict
 
 def plot_clip_val():
-    clip_val_path = 'outputs/previous-best/clip_val.json'
-    save_dir = '/data1/cvpr2022/plots/previous-best/clip_vals'
+    clip_val_path = 'outputs/per_batch_per_head_fp_forward/clip_val.json'
+    save_dir = '/data1/cvpr2022/plots/per_batch/clip_vals'
 
     if not os.path.exists(save_dir):
-        os.mkdir(save_dir)
+        os.makedirs(save_dir, exist_ok=True)
 
     with open(clip_val_path, 'r') as f:
         clip_vals = json.load(f)
@@ -32,10 +32,10 @@ def plot_clip_val():
 
 def plot_shifts():
     clip_val_path = 'outputs/previous-best/shift.json'
-    save_dir = '/data1/cvpr2022/plots/previous-best/shifts'
+    save_dir = '/data1/cvpr2022/plots/per_batch/shifts'
 
     if not os.path.exists(save_dir):
-        os.mkdir(save_dir)
+        os.makedirs(save_dir, exist_ok=True)
 
     with open(clip_val_path, 'r') as f:
         clip_vals = json.load(f)

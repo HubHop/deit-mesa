@@ -29,7 +29,7 @@ import memory_saving.models
 import tools
 import os
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import warnings
 warnings.filterwarnings("ignore")
 from collections import defaultdict
@@ -40,7 +40,7 @@ def get_args_parser():
     parser.add_argument('--epochs', default=300, type=int)
 
     # Model parameters
-    parser.add_argument('--model', default='deit_base_patch16_224', type=str, metavar='MODEL',
+    parser.add_argument('--model', default='deit_ms_tiny_patch16_224', type=str, metavar='MODEL',
                         help='Name of model to train')
     parser.add_argument('--input-size', default=224, type=int, help='images input size')
 
@@ -487,7 +487,7 @@ def main(args):
 
 
     total_time = time.time() - start_time
-    total_time_str = str(datetime.timedelta(seconds=int(total_time)))
+    total_time_str = str(timedelta(seconds=int(total_time)))
     verbose('Training time {}'.format(total_time_str))
 
 
