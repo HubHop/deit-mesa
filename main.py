@@ -270,58 +270,13 @@ def main(args):
         drop_path_rate=args.drop_path,
         drop_block_rate=None,
     )
-    # for name, module in model.named_modules():
-    #     module.name = name
+    for name, module in model.named_modules():
+        module.name = name
     ms.policy.deploy_on_init(model, args.ms_policy, verbose=verbose, override_verbose=True)
     verbose(f"verbose model: {model}")
 
-    # if args.finetune:
-    #     if args.finetune.startswith('https'):
-    #         checkpoint = torch.hub.load_state_dict_from_url(
-    #             args.finetune, map_location='cpu', check_hash=True)
-    #     else:
-    #         checkpoint = torch.load(args.finetune, map_location='cpu')
-    #
-    #     checkpoint_model = checkpoint['model']
-    #     state_dict = model.state_dict()
-    #     for k in ['head.weight', 'head.bias', 'head_dist.weight', 'head_dist.bias']:
-    #         if k in checkpoint_model and checkpoint_model[k].shape != state_dict[k].shape:
-    #             verbose(f"Removing key {k} from pretrained checkpoint")
-    #             del checkpoint_model[k]
-    #
-    #     # interpolate position embedding
-    #     pos_embed_checkpoint = checkpoint_model['pos_embed']
-    #     embedding_size = pos_embed_checkpoint.shape[-1]
-    #     num_patches = model.patch_embed.num_patches
-    #     num_extra_tokens = model.pos_embed.shape[-2] - num_patches
-    #     # height (== width) for the checkpoint position embedding
-    #     orig_size = int((pos_embed_checkpoint.shape[-2] - num_extra_tokens) ** 0.5)
-    #     # height (== width) for the new position embedding
-    #     new_size = int(num_patches ** 0.5)
-    #     # class_token and dist_token are kept unchanged
-    #     extra_tokens = pos_embed_checkpoint[:, :num_extra_tokens]
-    #     # only the position tokens are interpolated
-    #     pos_tokens = pos_embed_checkpoint[:, num_extra_tokens:]
-    #     pos_tokens = pos_tokens.reshape(-1, orig_size, orig_size, embedding_size).permute(0, 3, 1, 2)
-    #     pos_tokens = torch.nn.functional.interpolate(
-    #         pos_tokens, size=(new_size, new_size), mode='bicubic', align_corners=False)
-    #     pos_tokens = pos_tokens.permute(0, 2, 3, 1).flatten(1, 2)
-    #     new_pos_embed = torch.cat((extra_tokens, pos_tokens), dim=1)
-    #     checkpoint_model['pos_embed'] = new_pos_embed
-    #
-    #     model.load_state_dict(checkpoint_model, strict=False)
 
     model.to(device)
-
-    model_ema = None
-    # if args.model_ema:
-    #     # Important to create EMA model after cuda(), DP wrapper, and AMP but before SyncBN and DDP wrapper
-    #     model_ema = ModelEma(
-    #         model,
-    #         decay=args.model_ema_decay,
-    #         device='cpu' if args.model_ema_force_cpu else '',
-    #         resume='')
-
     model_without_ddp = model
     if args.distributed:
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu], find_unused_parameters=True)
@@ -461,29 +416,29 @@ def main(args):
             with (output_dir / "log.txt").open("a") as f:
                 f.write(json.dumps(log_stats) + "\n")
 
-        clip_vals = defaultdict(list)
-        shifts = defaultdict(list)
-        clip_val_path = os.path.join(args.output_dir, 'clip_val.json')
-        shift_path = os.path.join(args.output_dir, 'shift.json')
-        if utils.get_rank() == 0:
-            if os.path.exists(clip_val_path):
-                with open(clip_val_path, 'r') as f:
-                    clip_vals = json.load(f)
-            if os.path.exists(shift_path):
-                with open(shift_path, 'r') as f:
-                    shifts = json.load(f)
-
-        for k, v in model.named_parameters():
-            if 'clip_val' in k:
-                clip_vals[k].append(v.tolist())
-            if 'shift' in k:
-                shifts[k].append(v.tolist())
-
-        if utils.get_rank() == 0:
-            with open(clip_val_path, 'w+') as f:
-                json.dump(clip_vals, f, indent=2)
-            with open(shift_path, 'w+') as f:
-                json.dump(shifts, f, indent=2)
+        # clip_vals = defaultdict(list)
+        # shifts = defaultdict(list)
+        # clip_val_path = os.path.join(args.output_dir, 'clip_val.json')
+        # shift_path = os.path.join(args.output_dir, 'shift.json')
+        # if utils.get_rank() == 0:
+        #     if os.path.exists(clip_val_path):
+        #         with open(clip_val_path, 'r') as f:
+        #             clip_vals = json.load(f)
+        #     if os.path.exists(shift_path):
+        #         with open(shift_path, 'r') as f:
+        #             shifts = json.load(f)
+        #
+        # for k, v in model.named_parameters():
+        #     if 'clip_val' in k:
+        #         clip_vals[k].append(v.tolist())
+        #     if 'shift' in k:
+        #         shifts[k].append(v.tolist())
+        #
+        # if utils.get_rank() == 0:
+        #     with open(clip_val_path, 'w+') as f:
+        #         json.dump(clip_vals, f, indent=2)
+        #     with open(shift_path, 'w+') as f:
+        #         json.dump(shifts, f, indent=2)
 
 
     total_time = time.time() - start_time

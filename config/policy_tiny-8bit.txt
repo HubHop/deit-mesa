@@ -3,7 +3,6 @@ on fc:
   by_index: all
   enable: True
   level: 256
-  stable: -1
   ema_decay: 0.9
   fp_forward: True
 
@@ -11,7 +10,6 @@ on matmul:
   by_index: all
   enable: True
   level: 256
-  stable: -1
   ema_decay: 0.9
   fp_forward: True
 
@@ -19,7 +17,6 @@ on gelu:
   by_index: all
   enable: True
   level: 256
-  stable: -1
   ema_decay: 0.9
   fp_forward: True
 
@@ -27,7 +24,6 @@ on layernorm:
   by_index: all
   enable: True
   level: 256
-  stable: -1
   ema_decay: 0.9
   fp_forward: True
 
@@ -35,6 +31,5 @@ on softmax:
   by_index: all
   enable: True
   level: 256
-  stable: -1
   ema_decay: 0.9
   fp_forward: True

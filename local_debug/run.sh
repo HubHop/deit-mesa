@@ -6,6 +6,6 @@ CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch \
             --data-path /home/datasets/cifar100  \
             --data-set CIFAR \
             --input-size 224  \
-            --exp_name per_batch_per_head_fp_forward \
+            --exp_name channel_wise_ema_0.9 \
             --num_workers 10 \
             --ms_policy config/policy_tiny-8bit.txt 
