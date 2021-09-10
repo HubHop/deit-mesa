@@ -15,10 +15,42 @@ def set_figure_pixel_size (width, height, ppi):
     plt.figure(figsize=(width/float(ppi), height/float(ppi)), dpi=ppi)
 
 
+def plot_log_v2(key):
+    plt.clf()    # set_figure_pixel_size(1000, 700)
+    plt.figure(figsize=(5,4), dpi=200)
+    base_dir = '/data1/cvpr2022/acc_plot/deit-base-compare'
+    exps = os.listdir(base_dir)
+    exps = sorted(exps)
+    for exp in exps:
+        label = exp.split('.')[0]
+        if exp.endswith('pdf') or exp.endswith('png'):
+            continue
+        # if os.path.isfile(os.path.join(base_dir, exp)):
+        #     continue
+        with open(os.path.join(base_dir, exp)) as f:
+            logs = []
+            epochs = []
+
+            for line in f.readlines():
+                epoch_stat = json.loads(line.strip())
+                logs.append(epoch_stat[key])
+                epochs.append(epoch_stat['epoch'])
+                # if int(epoch_stat['epoch']) > 50:
+                #     break
+            plt.plot(epochs, logs, label=label)
+    plt.legend()
+    plt.xlabel('Epoch')
+    ylabel = keys_dict[key]
+    plt.ylabel(ylabel)
+    plt.tight_layout()
+    # plt.grid()
+    # plt.show()
+    plt.savefig(base_dir + '/%s.png'%(ylabel))
+
 def plot_log(key):
     plt.clf()    # set_figure_pixel_size(1000, 700)
     plt.figure(figsize=(5,4))
-    base_dir = '/data1/cvpr2022/compare'
+    base_dir = '/data1/cvpr2022/acc_plot/deit-compare'
     exps = os.listdir(base_dir)
     exps = sorted(exps)
     for exp in exps:
@@ -47,4 +79,4 @@ def plot_log(key):
 if __name__ == '__main__':
     keys = ['test_acc1', 'test_acc5', 'train_loss', 'test_loss']
     for key in keys:
-        plot_log(key)
+        plot_log_v2(key)

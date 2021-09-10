@@ -18,7 +18,7 @@ from timm.optim import create_optimizer
 from timm.utils import NativeScaler, get_state_dict, ModelEma
 
 from datasets import build_dataset
-from engine import train_one_epoch, evaluate, get_act_dist
+from engine import train_one_epoch, evaluate, get_act_dist, train_throughput
 from losses import DistillationLoss
 from samplers import RASampler
 import models
@@ -181,6 +181,8 @@ def get_args_parser():
     parser.add_argument('--exp_name', default='deit',
                         type=str, help='model configuration')
     parser.add_argument('--get_act_dist', action='store_true', help='plot activation distribution')
+    parser.add_argument('--train_throughput', action='store_true', help='plot activation distribution')
+
     return parser
 
 
@@ -360,6 +362,16 @@ def main(args):
     if args.eval:
         test_stats = evaluate(data_loader_val, model, device, verbose=verbose)
         verbose(f"Accuracy of the network on the {len(dataset_val)} test images: {test_stats['acc1']:.1f}%")
+        return
+
+    if args.train_throughput:
+        train_throughput(
+            model, criterion, data_loader_train,
+            optimizer, device, 0, loss_scaler,
+            args.clip_grad, mixup_fn,
+            set_training_mode=args.finetune == '',  # keep in eval mode during finetuning
+            verbose = verbose,
+        )
         return
 
     verbose(f"Start training for {args.epochs} epochs")

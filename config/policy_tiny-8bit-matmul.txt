@@ -1,0 +1,7 @@
+
+on matmul:
+  by_index: all
+  enable: True
+  level: 256
+  ema_decay: 0.9
+  fp_forward: True

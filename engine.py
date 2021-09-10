@@ -14,6 +14,7 @@ from timm.utils import accuracy, ModelEma
 
 from losses import DistillationLoss
 import utils
+import time
 
 def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
                     data_loader: Iterable, optimizer: torch.optim.Optimizer,
@@ -115,3 +116,64 @@ def get_act_dist(data_loader, model, device, verbose=print):
         break
 
     return
+
+
+def train_throughput(model: torch.nn.Module, criterion: DistillationLoss,
+                    data_loader: Iterable, optimizer: torch.optim.Optimizer,
+                    device: torch.device, epoch: int, loss_scaler, max_norm: float = 0,
+                    mixup_fn: Optional[Mixup] = None,
+                    set_training_mode=True, verbose=print):
+    model.train(set_training_mode)
+    metric_logger = utils.MetricLogger(delimiter="  ", verbose=verbose)
+    metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value:.6f}'))
+    header = 'Epoch: [{}]'.format(epoch)
+    print_freq = 10
+
+    for samples, targets in metric_logger.log_every(data_loader, print_freq, header):
+        samples = samples.to(device, non_blocking=True)
+        targets = targets.to(device, non_blocking=True)
+        batch_size = samples.shape[0]
+        if mixup_fn is not None:
+            samples, targets = mixup_fn(samples, targets)
+
+        for i in range(20):
+            with torch.cuda.amp.autocast():
+                outputs = model(samples)
+                loss = criterion(samples, outputs, targets)
+
+            loss_value = loss.item()
+
+            if not math.isfinite(loss_value):
+                verbose("Loss is {}, stopping training".format(loss_value))
+                sys.exit(1)
+
+            optimizer.zero_grad()
+
+            # this attribute is added by timm on one optimizer (adahessian)
+            is_second_order = hasattr(optimizer, 'is_second_order') and optimizer.is_second_order
+            loss_scaler(loss, optimizer, clip_grad=max_norm,
+                        parameters=model.parameters(), create_graph=is_second_order)
+            torch.cuda.synchronize()
+
+        verbose(f"throughput averaged with 50 times")
+        tic1 = time.time()
+        for i in range(50):
+            with torch.cuda.amp.autocast():
+                outputs = model(samples)
+                loss = criterion(samples, outputs, targets)
+
+            loss_value = loss.item()
+
+            if not math.isfinite(loss_value):
+                verbose("Loss is {}, stopping training".format(loss_value))
+                sys.exit(1)
+
+            optimizer.zero_grad()
+            is_second_order = hasattr(optimizer, 'is_second_order') and optimizer.is_second_order
+            loss_scaler(loss, optimizer, clip_grad=max_norm,
+                        parameters=model.parameters(), create_graph=is_second_order)
+
+            torch.cuda.synchronize()
+        tic2 = time.time()
+        verbose(f"batch_size {batch_size} throughput {50 * batch_size / (tic2 - tic1)}")
+        return
