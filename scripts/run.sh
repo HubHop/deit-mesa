@@ -6,8 +6,8 @@ python -m torch.distributed.launch \
         --model deit_ms_tiny_patch16_224  \
         --batch-size 128 \
         --data-path /projects/dl65/m3_imagenet  \
-        --data-set CIFAR \
+        --data-set IMNET \
         --input-size 224  \
-        --output_dir ./exp_cuda/full \
+        --exp_name debug \
         --num_workers 10 \
         --ms_policy config/policy_tiny-8bit.txt
