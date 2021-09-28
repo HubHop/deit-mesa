@@ -155,9 +155,9 @@ def train_throughput(model: torch.nn.Module, criterion: DistillationLoss,
                         parameters=model.parameters(), create_graph=is_second_order)
             torch.cuda.synchronize()
 
-        verbose(f"throughput averaged with 50 times")
+        verbose(f"throughput averaged with 30 times")
         tic1 = time.time()
-        for i in range(50):
+        for i in range(30):
             with torch.cuda.amp.autocast():
                 outputs = model(samples)
                 loss = criterion(samples, outputs, targets)
@@ -175,5 +175,5 @@ def train_throughput(model: torch.nn.Module, criterion: DistillationLoss,
 
             torch.cuda.synchronize()
         tic2 = time.time()
-        verbose(f"batch_size {batch_size} throughput {50 * batch_size / (tic2 - tic1)}")
+        verbose(f"batch_size {batch_size} throughput {30 * batch_size / (tic2 - tic1)}")
         return
