@@ -54,7 +54,7 @@ def plot_log_v2(key):
     plt.clf()    # set_figure_pixel_size(1000, 700)
     plt.figure(figsize=(5,4), dpi=200)
     # plt.figure(figsize=(5, 4))
-    base_dir = '/data1/cvpr2022/acc_plot/compare_cuda_small'
+    base_dir = '/data1/cvpr2022/acc_plot/compare_pvt_imagenet/'
     exps = os.listdir(base_dir)
     exps = sorted(exps)
     for exp in exps:
@@ -79,7 +79,7 @@ def plot_log_v2(key):
     plt.tight_layout()
     # plt.grid()
     # plt.show()
-    plt.savefig(base_dir + '/%s.png'%(ylabel))
+    plt.savefig(base_dir + '/%s.pdf'%(ylabel))
 
 def plot_log(key):
     plt.clf()    # set_figure_pixel_size(1000, 700)
