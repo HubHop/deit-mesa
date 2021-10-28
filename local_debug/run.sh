@@ -8,4 +8,4 @@ CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch \
             --input-size 224  \
             --exp_name test_group \
             --num_workers 10 \
-            --ms_policy config/policy_tiny-8bit.txt
+            --ms_policy config/policy_tiny-8bit-block.txt
