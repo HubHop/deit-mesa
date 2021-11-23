@@ -52,8 +52,6 @@ def train_one_epoch(model: torch.nn.Module, criterion: DistillationLoss,
                     parameters=model.parameters(), create_graph=is_second_order)
 
         torch.cuda.synchronize()
-        # if model_ema is not None:
-        #     model_ema.update(model)
 
         metric_logger.update(loss=loss_value)
         metric_logger.update(lr=optimizer.param_groups[0]["lr"])
@@ -94,28 +92,6 @@ def evaluate(data_loader, model, device, verbose=print):
           .format(top1=metric_logger.acc1, top5=metric_logger.acc5, losses=metric_logger.loss))
 
     return {k: meter.global_avg for k, meter in metric_logger.meters.items()}
-
-
-@torch.no_grad()
-def get_act_dist(data_loader, model, device, verbose=print):
-    criterion = torch.nn.CrossEntropyLoss()
-
-    metric_logger = utils.MetricLogger(delimiter="  ", verbose=verbose)
-    header = 'Test:'
-
-    # switch to evaluation mode
-    model.eval()
-
-    for images, target in metric_logger.log_every(data_loader, 10, header):
-        images = images.to(device, non_blocking=True)
-        target = target.to(device, non_blocking=True)
-
-        # compute output
-        with torch.cuda.amp.autocast():
-            output = model(images)
-        break
-
-    return
 
 
 def train_throughput(model: torch.nn.Module, criterion: DistillationLoss,

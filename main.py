@@ -18,14 +18,13 @@ from timm.optim import create_optimizer
 from timm.utils import NativeScaler, get_state_dict, ModelEma
 
 from datasets import build_dataset
-from engine import train_one_epoch, evaluate, get_act_dist, train_throughput
+from engine import train_one_epoch, evaluate, train_throughput
 from losses import DistillationLoss
 from samplers import RASampler
 import models
 import utils
 
-import memory_saving as ms
-import memory_saving.models
+import mesa as ms
 import tools
 import os
 import logging
@@ -188,9 +187,6 @@ def get_args_parser():
 
 def main(args):
     utils.init_distributed_mode(args)
-
-    #case = "{}-{}-{}".format(args.model, args.data_set, args.batch_size)
-    # args.output_dir = os.path.join(args.output_dir, datetime.today().strftime('%Y-%m-%d'))
     verbose = print
     if utils.get_rank() == 0:
         log_suffix = "{}log-all".format("eval-" if args.eval else "")
@@ -427,31 +423,6 @@ def main(args):
         if args.output_dir and utils.is_main_process():
             with (output_dir / "log.txt").open("a") as f:
                 f.write(json.dumps(log_stats) + "\n")
-
-        # clip_vals = defaultdict(list)
-        # shifts = defaultdict(list)
-        # clip_val_path = os.path.join(args.output_dir, 'clip_val.json')
-        # shift_path = os.path.join(args.output_dir, 'shift.json')
-        # if utils.get_rank() == 0:
-        #     if os.path.exists(clip_val_path):
-        #         with open(clip_val_path, 'r') as f:
-        #             clip_vals = json.load(f)
-        #     if os.path.exists(shift_path):
-        #         with open(shift_path, 'r') as f:
-        #             shifts = json.load(f)
-        #
-        # for k, v in model.named_parameters():
-        #     if 'clip_val' in k:
-        #         clip_vals[k].append(v.tolist())
-        #     if 'shift' in k:
-        #         shifts[k].append(v.tolist())
-        #
-        # if utils.get_rank() == 0:
-        #     with open(clip_val_path, 'w+') as f:
-        #         json.dump(clip_vals, f, indent=2)
-        #     with open(shift_path, 'w+') as f:
-        #         json.dump(shifts, f, indent=2)
-
 
     total_time = time.time() - start_time
     total_time_str = str(timedelta(seconds=int(total_time)))

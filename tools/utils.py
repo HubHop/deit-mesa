@@ -4,14 +4,6 @@ import torch.distributed as dist
 import shutil
 import os
 import logging
-from gpuinfo import GPUInfo
-
-def gpu_info():
-    try:
-        percent, memory = GPUInfo.gpu_usage()
-    except ValueError:
-        return "Error when read GPU utilization"
-    return "precent: %r, memory: %r" % (percent, memory)
 
 def accuracy(output, target, topk=(1,)):
     """Computes the accuracy over the k top predictions for the specified values of k"""
