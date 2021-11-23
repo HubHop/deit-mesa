@@ -14,9 +14,9 @@ For more details, please checkout our paper: [Mesa: A Memory-saving Training Fra
    conda activate mesa
    bash scripts/run.sh [model] [gpus]
 
-   # For example, to train DeiT-Ti with Mesa on 2 GPUs
+   # For example, to train DeiT-Ti with Mesa on 1 GPU
 
-   bash scripts/run.sh deit_tiny_patch16_224 2 
+   bash scripts/run.sh deit_tiny_patch16_224 1
    # You may need to change the `--data-path` and `--data-set` (CIFAR or IMNET) in scripts/run.sh to make sure you have the correct path to dataset.
    ```
 
@@ -36,4 +36,4 @@ For more details, please checkout our paper: [Mesa: A Memory-saving Training Fra
 
 ## Acknowledgments
 
-This repository has adopted part of the quantization codes from [DeiT](https://github.com/facebookresearch/deit), we thank the authors for their open-sourced code.
+This repository has adopted codes from [DeiT](https://github.com/facebookresearch/deit), we thank the authors for their open-sourced code.
