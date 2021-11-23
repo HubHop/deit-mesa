@@ -1,7 +1,10 @@
+MODEL=$1
+GPUS=$2
+PORT=${PORT:-29500}
 
-CUDA_VISIBLE_DEVICES=0 python -m torch.distributed.launch \
-            --nproc_per_node=1 --master_port 1622 --use_env main.py  \
-            --model deit_tiny_patch16_224  \
+python -m torch.distributed.launch \
+            --nproc_per_node=$GPUS --master_port $PORT --use_env main.py  \
+            --model $MODEL  \
             --batch-size 128 \
             --data-path /home/datasets/cifar100  \
             --data-set CIFAR \

@@ -1,16 +1,23 @@
-## This is a demo for Mesa: A Memory-saving Training Framework for Transformers
+## Demo project for training DeiT with Mesa
+
+For more details, please checkout our paper: [Mesa: A Memory-saving Training Framework for Transformers](https://arxiv.org/abs/2111.11124).
 
 ## Usage
 
-1. Install Mesa from [here]()
-2. Install timm
+1. Install Mesa from [here](https://github.com/zhuang-group/Mesa).
+2. Install timm.
     ```bash
     pip install timm==0.3.2
    ```
-3. To train DeiT-Ti with Mesa on a single GPU
-   ```
+3. To train a model.
+   ```bash
    conda activate mesa
-   bash scripts/run.sh
+   bash scripts/run.sh [model] [gpus]
+
+   # For example, to train DeiT-Ti with Mesa on 2 GPUs
+
+   bash scripts/run.sh deit_tiny_patch16_224 2 
+   # You may need to change the `--data-path` and `--data-set` (CIFAR or IMNET) in scripts/run.sh to make sure you have the correct path to dataset.
    ```
 
 ## Results on ImageNet
