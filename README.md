@@ -9,7 +9,7 @@
    ```
 3. To train DeiT-Ti with Mesa on a single GPU
    ```
-   conda activ
+   conda activate mesa
    bash scripts/run.sh
    ```
 
@@ -29,4 +29,4 @@
 
 ## Acknowledgments
 
-This repository has adopted part of the quantization codes from [DeiT]](https://github.com/facebookresearch/deit), we thank the authors for their open-sourced code.
+This repository has adopted part of the quantization codes from [DeiT](https://github.com/facebookresearch/deit), we thank the authors for their open-sourced code.
